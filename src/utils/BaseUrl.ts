@@ -1,0 +1,1 @@
+export default BASEURL = 'https://e.de2solutions.com/mobile_dash/'
