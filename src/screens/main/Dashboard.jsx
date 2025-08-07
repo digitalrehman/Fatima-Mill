@@ -39,7 +39,7 @@ const Dashboard = ({navigation}) => {
   const companyData = [
     {
       id: 1,
-      name: 'Company 1',
+      name: 'Fatima Mill',
       img: AppImages.building,
       onPress: () => navigation.navigate('Detail'),
     },

@@ -23,6 +23,7 @@
     "react-native": "0.79.1",
     "react-native-chart-kit": "^6.12.0",
     "react-native-date-picker": "^5.0.12",
+    "react-native-file-viewer": "^2.1.5",
     "react-native-gesture-handler": "^2.25.0",
     "react-native-gifted-charts": "^1.4.61",
     "react-native-html-to-pdf": "^0.12.0",
