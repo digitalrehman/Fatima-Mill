@@ -8,6 +8,7 @@ import SimpleHeader from '../../../../components/SimpleHeader';
 import AppText from '../../../../components/AppText';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import { PermissionsAndroid, Platform, Alert } from 'react-native';
+import RNFS from 'react-native-fs';
 // import FileViewer from 'react-native-file-viewer';
 
 const Aging = ({ navigation, route }) => {
@@ -80,100 +81,91 @@ const Aging = ({ navigation, route }) => {
 
 
   // generate pdf 
-  const requestStoragePermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        if (Platform.Version >= 33) {
-          const readImages = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-          );
-          const readDocs = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_DOCUMENTS
-          );
-          return (
-            readImages === PermissionsAndroid.RESULTS.GRANTED &&
-            readDocs === PermissionsAndroid.RESULTS.GRANTED
-          );
-        } else if (Platform.Version >= 29) {
-          // Android 10/11: No WRITE_EXTERNAL_STORAGE needed
-          return true;
-        } else {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-          );
-          return granted === PermissionsAndroid.RESULTS.GRANTED;
-        }
-      } catch (err) {
-        console.warn(err);
-        return false;
-      }
-    } else {
-      return true;
-    }
-  };
-
-
-
-  const generatePDF = async () => {
-    const hasPermission = await requestStoragePermission();
-    if (!hasPermission) {
-      Alert.alert('Permission Denied', 'Storage permission is required.');
-      return;
-    }
-
-    let tableRows = aging.map(row => `
-      <tr>
-        <td>${row.reference}</td>
-        <td>${row.tran_date}</td>
-        <td>${row.days}</td>
-        <td>${row.Allocated}</td>
-        <td>${row.Invoice_amount}</td>
-        <td>${row.invoce_balance}</td>
-      </tr>
-    `).join('');
-
-    const htmlContent = `
-      <html>
-        <head>
-          <style>
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #000; padding: 6px; font-size: 12px; text-align: center; }
-            th { background-color: #f0f0f0; }
-          </style>
-        </head>
-        <body>
-          <h2 style="text-align:center;">Aging Report</h2>
-          <table>
-            <tr>
-              <th>Reference</th>
-              <th>Transaction Date</th>
-              <th>Days</th>
-              <th>Allocated</th>
-              <th>Invoice Amount</th>
-              <th>Invoice Balance</th>
-            </tr>
-            ${tableRows}
-          </table>
-        </body>
-      </html>
-    `;
-
+const requestStoragePermission = async () => {
+  if (Platform.OS === 'android') {
     try {
-      const options = {
-        html: htmlContent,
-        fileName: 'Aging_Report',
-        directory: 'Download', // This makes it save to Downloads folder
-      };
-
-      const file = await RNHTMLtoPDF.convert(options);
-      console.log('PDF path:', file.filePath);
-
-      Alert.alert('PDF Saved', `File saved to:\n${file.filePath}`);
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      Alert.alert('Error', 'Something went wrong while generating PDF.');
+      // Android 13+ (API 33+)
+      if (Platform.Version >= 33) {
+        const readMediaPermission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+        );
+        return readMediaPermission === PermissionsAndroid.RESULTS.GRANTED;
+      } 
+      // Android 12 और नीचे के लिए
+      else {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
     }
+  } else {
+    return true;
+  }
+};
+
+
+
+// 👇 Place this ABOVE generatePDF
+const htmlContent = `
+  <h1 style="text-align: center;">Aging Report</h1>
+  <table border="1" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <th>Reference</th>
+      <th>Tran Date</th>
+      <th>Days</th>
+      <th>Allocated</th>
+      <th>Invoice Amt</th>
+      <th>Balance</th>
+    </tr>
+    ${aging.map(item => `
+      <tr>
+        <td>${item.reference}</td>
+        <td>${item.tran_date}</td>
+        <td>${item.days}</td>
+        <td>${item.Allocated}</td>
+        <td>${item.Invoice_amount}</td>
+        <td>${item.invoce_balance}</td>
+      </tr>
+    `).join('')}
+  </table>
+`;
+
+
+
+
+const generatePDF = async () => {
+  const hasPermission = await requestStoragePermission();
+  if (!hasPermission) {
+    Alert.alert('Permission Denied', 'Storage permission is required.');
+    return;
+  }
+
+  const fileName = 'Aging_Report.pdf';
+  const filePath = `${RNFS.DownloadDirectoryPath}/${fileName}`;
+
+  const options = {
+    html: htmlContent, // <- Make sure this variable exists
+    fileName: fileName.replace('.pdf', ''), // ✅ remove ".pdf" here
+    directory: 'Download', // ✅ force into Downloads
   };
+
+  try {
+    const file = await RNHTMLtoPDF.convert(options);
+
+    // ✅ Move PDF manually to RNFS.DownloadDirectoryPath (real Downloads folder)
+    await RNFS.moveFile(file.filePath, filePath);
+
+    console.log('PDF saved to:', filePath);
+    Alert.alert('PDF Saved', `File saved to:\n${filePath}`);
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    Alert.alert('Error', 'Something went wrong while generating PDF.');
+  }
+};
 
 
 
