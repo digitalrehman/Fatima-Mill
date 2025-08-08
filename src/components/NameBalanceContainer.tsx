@@ -1,113 +1,98 @@
-import {View, Text, TouchableOpacity} from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import AppText from './AppText';
-import {APPCOLORS} from '../utils/APPCOLORS';
-import LinearGradient from 'react-native-linear-gradient';
-import {responsiveWidth} from '../utils/Responsive';
+import { APPCOLORS } from '../utils/APPCOLORS';
+import { responsiveWidth } from '../utils/Responsive';
 import AppButton from './AppButton';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+
 type props = {
   Name?: string;
   balance?: number;
   percent?: number;
   type?: string;
   item?: any;
-  onPress?: () => void;
 };
+
 const NameBalanceContainer = ({
   Name,
+  balance = 0,
+  percent = 0,
   type,
-  balance,
-  percent,
-  onPress,
   item,
 }: props) => {
   const navigation = useNavigation();
+
   return (
-    <LinearGradient
-      colors={['#E6E6E6', '#ACD7E5']}
-      style={{padding: 20, borderRadius: 20}}>
-      <TouchableOpacity >
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <AppText
-            title="Name"
-            titleSize={1.6}
-            titleWeight
-            titleColor={APPCOLORS.BLACK}
+    <TouchableOpacity
+      style={{
+        flexDirection: 'row',
+        paddingVertical: 10,
+        borderBottomWidth: 0.5,
+        alignItems: 'center',
+        borderColor: '#ccc',
+        marginTop: 5,
+        
+      }}>
+      <View style={{ width: responsiveWidth(35) }}>
+        <AppText title={Name} titleSize={1.5} titleColor={APPCOLORS.BLACK} />
+      </View>
+
+      <View style={{ width: responsiveWidth(22) }}>
+        <AppText
+          title={Math.round(balance).toLocaleString()}
+          titleSize={1.5}
+          titleColor={APPCOLORS.BLACK}
+        />
+      </View>
+
+      <View style={{ width: responsiveWidth(10) }}>
+        <AppText title={percent.toString()} titleSize={1.5} />
+      </View>
+
+      <View
+        style={{
+          width: responsiveWidth(30),
+          flexDirection: 'row',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          gap: 4,
+        }}>
+        {type === 'Items' ? (
+          <AppButton
+            title="Ledger"
+            btnWidth={15}
+            btnHeight={28}
+            fontSize={1.2}
+            onPress={() =>
+              navigation.navigate('Ledger', { name: type, item: item })
+            }
           />
-
-          <View style={{flexDirection: 'row', gap: 50}}>
-            <AppText
-              title="Balance"
-              titleSize={1.6}
-              titleWeight
-              titleColor={APPCOLORS.BLACK}
-            />
-            <AppText
-              title="%"
-              titleSize={1.6}
-              titleWeight
-              titleColor={APPCOLORS.BLACK}
-            />
-          </View>
-        </View>
-
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <View style={{width: responsiveWidth(44)}}>
-            <AppText
-              title={Name}
-              titleSize={1.8}
-              titleColor={APPCOLORS.BLACK}
-            />
-          </View>
-
-          <View style={{flexDirection: 'row', gap: 40}}>
-            <AppText
-              title={Math.round(balance).toLocaleString()}
-              titleSize={1.8}
-              titleColor={APPCOLORS.BLACK}
-            />
-            <AppText title="0" titleSize={1.8} titleColor={APPCOLORS.BLACK} />
-          </View>
-        </View>
-      </TouchableOpacity>
-
-      {type == 'Customer' || type == 'Suppliers' || type == 'Items' ? (
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 10,
-          }}>
-          {type == 'Items' ? (
+        ) : type === 'Customer' || type === 'Suppliers' ? (
+          <>
             <AppButton
-              title="Ledger"
-              btnWidth={80}
+              title="Ag"
+              btnWidth={10}
+              btnHeight={28}
+              fontSize={1.2}
               onPress={() =>
-                navigation.navigate('Ledger', {name: type, item: item})
+                navigation.navigate('Aging', { name: type, item: item })
               }
             />
-          ) : (
-            <>
-              <AppButton
-                title="Aging"
-                btnWidth={37}
-                onPress={() =>
-                  navigation.navigate('Aging', {name: type, item: item})
-                }
-              />
-              <AppButton
-                title="Ledger"
-                btnWidth={37}
-                onPress={() =>
-                  navigation.navigate('Ledger', {name: type, item: item})
-                }
-              />
-            </>
-          )}
-        </View>
-      ) : null}
-    </LinearGradient>
+            <AppButton
+              title="Led"
+              btnWidth={10}
+              btnHeight={28}
+              fontSize={1.2}
+              onPress={() =>
+                navigation.navigate('Ledger', { name: type, item: item })
+              }
+            />
+          </>
+        ) : null}
+      </View>
+
+    </TouchableOpacity>
   );
 };
 

@@ -15,7 +15,7 @@ type props = {
 
 const AppButton = ({ title,onPress, btnWidth }: props) => {
     return (
-        <LinearGradient colors={['#1261A0', '#6499AA']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ borderRadius:200}}>
+        <LinearGradient colors={['#1261A0', '#6499AA']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ borderRadius:10}}>
             <TouchableOpacity onPress={onPress} style={{ alignItems: 'center', justifyContent: 'center',width:responsiveWidth(btnWidth ? btnWidth : 90), height:responsiveHeight(5),  borderRadius:200}}>
 
             <AppText title={title} titleColor={APPCOLORS.WHITE} titleSize={2} titleWeight/>
